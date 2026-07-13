@@ -51,11 +51,11 @@ func TestApprovalRenderingShowsExactRequestWithoutEnvironmentValues(t *testing.T
 	for _, expected := range []string{
 		"Operation: test.render",
 		"Purpose: Render\\u001B[31m safely",
-		"Executable: " + executable,
+		"Executable: " + capture.request.Executable(),
 		`1: "a b"`,
 		`2: "|"`,
 		`3: ""`,
-		"Working directory: " + root,
+		"Working directory: " + capture.request.WorkingDirectory(),
 		"Mutation: project",
 		"Network: read",
 		"Starts service: true",

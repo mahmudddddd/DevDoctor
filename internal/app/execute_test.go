@@ -61,9 +61,7 @@ func TestExecutionServiceRunsOnlyApprovedPreparedCommand(t *testing.T) {
 	if result.Status != model.CommandCompleted || runner.calls != 1 {
 		t.Fatalf("result = %+v, runner calls = %d", result, runner.calls)
 	}
-	if runner.prepared.Spec().Executable != spec.Executable {
-		t.Fatalf("runner received executable %q, want %q", runner.prepared.Spec().Executable, spec.Executable)
-	}
+	requireSameFile(t, runner.prepared.Spec().Executable, spec.Executable)
 }
 
 func TestExecutionServiceRevalidatesAfterApproval(t *testing.T) {
@@ -87,6 +85,21 @@ func TestExecutionServiceRevalidatesAfterApproval(t *testing.T) {
 	}
 	if runner.calls != 0 {
 		t.Fatalf("runner calls = %d, want 0", runner.calls)
+	}
+}
+
+func requireSameFile(t *testing.T, got, want string) {
+	t.Helper()
+	gotInfo, err := os.Stat(got)
+	if err != nil {
+		t.Fatalf("stat received path %q: %v", got, err)
+	}
+	wantInfo, err := os.Stat(want)
+	if err != nil {
+		t.Fatalf("stat expected path %q: %v", want, err)
+	}
+	if !os.SameFile(gotInfo, wantInfo) {
+		t.Fatalf("received path %q and expected path %q identify different files", got, want)
 	}
 }
 

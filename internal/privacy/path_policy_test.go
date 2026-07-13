@@ -28,9 +28,7 @@ func TestPathPolicyAllowsNestedWorkingDirectoryAndAppliesDefaults(t *testing.T) 
 		t.Fatalf("PrepareCommand() error = %v", err)
 	}
 	spec := prepared.Spec()
-	if spec.WorkingDirectory != working {
-		t.Fatalf("WorkingDirectory = %q, want %q", spec.WorkingDirectory, working)
-	}
+	requireSamePath(t, spec.WorkingDirectory, working)
 	if spec.Timeout != 2*time.Minute || spec.TerminationGrace != 2*time.Second || spec.OutputLimit != 256*1024 {
 		t.Fatalf("unexpected defaults: %+v", spec)
 	}
@@ -148,6 +146,21 @@ func TestPreparedCommandReturnsDefensiveCopies(t *testing.T) {
 	again := prepared.Spec()
 	if again.Arguments[0] != "original" || again.Environment.Set["SAFE_VALUE"] != "original" {
 		t.Fatalf("prepared command was mutated: %+v", again)
+	}
+}
+
+func requireSamePath(t *testing.T, got, want string) {
+	t.Helper()
+	gotInfo, err := os.Stat(got)
+	if err != nil {
+		t.Fatalf("stat received path %q: %v", got, err)
+	}
+	wantInfo, err := os.Stat(want)
+	if err != nil {
+		t.Fatalf("stat expected path %q: %v", want, err)
+	}
+	if !os.SameFile(gotInfo, wantInfo) {
+		t.Fatalf("received path %q and expected path %q identify different filesystem objects", got, want)
 	}
 }
 

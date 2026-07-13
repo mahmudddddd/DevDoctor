@@ -15,7 +15,7 @@ func TestRunnerEscalatesWhenProcessIgnoresSIGTERM(t *testing.T) {
 	spec := helperSpec(t, "ignore-term")
 	spec.Timeout = 100 * time.Millisecond
 	spec.TerminationGrace = 50 * time.Millisecond
-	result, err := runHelper(t, context.Background(), spec)
+	result, err := runHelper(context.Background(), t, spec)
 	if err != nil {
 		t.Fatalf("Run() error = %v", err)
 	}
