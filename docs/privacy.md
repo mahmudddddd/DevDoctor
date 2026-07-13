@@ -37,3 +37,15 @@ Agents are optional and untrusted. The deterministic core remains available with
 ## Telemetry
 
 There is no telemetry in the MVP. Any future proposal must be opt-in, documented, reviewable, and must not include project paths, filenames, source, logs, environment values, or diagnostic bundles.
+
+## Phase 2 execution privacy
+
+Phase 2 introduces an internal execution boundary but does not wire project commands into `diagnose`.
+
+Before consent, DevDoctor canonicalizes the selected project root and working directory, rejects working directories outside the root, resolves the executable to an absolute regular file, and records filesystem identities. The same identities are checked immediately before process start; a changed path requires a new preparation and approval.
+
+Consent displays the operation ID and purpose, exact executable and argument boundaries, canonical working directory, mutation/network/service classifications, timeout and termination grace, independent stream limit, environment variable names, and declared data descriptors. Environment values are never shown, logged, or returned. Grants are in-memory only and are scoped to once, the exact check, or the exact request for the current run. Non-interactive approval is unavailable and fails closed without reading stdin.
+
+The runner does not read `.env` files, shell profiles, or startup scripts and does not inherit the full host environment. It supplies a small platform launch baseline and only explicitly declared additional names or overrides. Known secret-bearing additions are rejected until a later explicit data policy exists.
+
+Stdout and stderr are retained independently up to the approved limit, then drained and counted without retaining excess bytes. Captures are valid UTF-8, carry explicit truncation metadata, stay in memory, and are not persisted or uploaded in Phase 2.

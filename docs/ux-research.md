@@ -131,3 +131,13 @@ Optional coding-agent assistance should appear only after local deterministic fi
 ## Phase 1 application
 
 The current Phase 1 implementation intentionally uses a small Huh menu, normal terminal output, clear project-root display, text/JSON formats, no project-script execution, and a non-interactive fail-closed path. It does not implement long-running progress, command approvals, alternate-screen dashboards, conversational sessions, or agent UX; those belong to later approved phases.
+
+## Phase 2 application
+
+Phase 2 implements an internal approval adapter and execution lifecycle without adding a user-selectable project command. A future check can present an exact request with the canonical executable, each argument as a separate boundary, canonical working directory, purpose, mutation/network/service classifications, timeout, termination grace, per-stream limit, environment names, and data descriptors.
+
+The interactive choices are approve once, approve the exact check, approve the exact request for the current run, or deny. Redirected/non-interactive execution reports approval unavailable immediately and never waits for input. Any material request change invalidates an earlier grant.
+
+Command results distinguish completed, failed, skipped, cancelled, and timed-out states. Stdout and stderr truncation is explicit: human output states captured and discarded byte counts, while structured output carries the same metadata. Terminal control characters are escaped before human rendering.
+
+Cancellation and timeout preserve their primary state even if process-tree cleanup also reports a problem. Unix process groups and Windows Job Objects prevent descendants from surviving a cancelled or timed-out run. Windows cannot provide the same graceful signal phase as Unix, so Job Object termination is immediate.

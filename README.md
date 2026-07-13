@@ -4,7 +4,7 @@ DevDoctor is a beginner-friendly command-line tool that explains why a software 
 
 It detects a project's stack, checks common setup problems, and turns evidence into clear explanations and actionable next steps. Its core diagnostics are deterministic, local, and usable without AI.
 
-> **Status:** DevDoctor is in early development. Phase 1 provides safe project discovery for common Node.js and TypeScript projects on Windows, macOS, and Linux. It does not execute project scripts.
+> **Status:** DevDoctor is in early development. Phase 1 provides safe project discovery for common Node.js and TypeScript projects on Windows, macOS, and Linux. Phase 2 adds an internal, consent-gated process-execution boundary for future checks. No current diagnostic executes project scripts.
 
 ## Why DevDoctor?
 
@@ -82,7 +82,7 @@ DevDoctor is local-first. By default, it does not:
 - Execute build, test, or startup scripts during project discovery
 - Read secret files such as `.env`, private keys, or credential stores
 
-Phase 1 reads only a small allowlist of project metadata files and enforces project-root containment. Later phases will add explicit consent before any project command, network check, data handoff, or file change.
+Phase 1 reads only a small allowlist of project metadata files and enforces project-root containment. Phase 2 implements the internal validation, exact consent, bounded-output, timeout, cancellation, and process-tree cleanup boundary required before a future check can run a command. It does not select commands or expose arbitrary execution, and `diagnose` remains discovery-only.
 
 See [docs/privacy.md](docs/privacy.md) for the privacy and trust model.
 
@@ -122,12 +122,13 @@ Do not open public issues for suspected vulnerabilities or accidental secret exp
 
 ## Roadmap
 
-1. Repository and release foundation
-2. Safe project discovery
-3. Deterministic rules and reports
-4. Approved build/start diagnosis
-5. Optional coding-agent handoff
-6. Additional ecosystems and the future Guard module
+1. Phase 0: repository and release foundation
+2. Phase 1: safe project discovery
+3. Phase 2: consent-gated command execution foundation
+4. Phase 3: deterministic rules and reports
+5. Approved build/start diagnosis
+6. Optional coding-agent handoff
+7. Additional ecosystems and the future Guard module
 
 ## License
 

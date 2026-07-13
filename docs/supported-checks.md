@@ -32,4 +32,8 @@ Workspace package globs are reported but not expanded in Phase 1.
 
 ### Safety
 
-Phase 1 does not execute package scripts, runtime probes, network requests, Docker commands, or database checks. Those require later command policy and consent work.
+Phase 1 does not execute package scripts, runtime probes, network requests, Docker commands, or database checks.
+
+## Phase 2: internal execution foundation
+
+Phase 2 supplies the validation, exact consent, minimal environment, bounded capture, timeout, cancellation, and cross-platform process-tree cleanup infrastructure required by future checks. It does not discover build/start commands, expose arbitrary command execution, or add a diagnostic check. Therefore the supported `diagnose` behavior above remains discovery-only and the Phase 1 report schema remains `1.0`.

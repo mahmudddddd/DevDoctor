@@ -20,7 +20,7 @@ go vet ./...
 go build ./cmd/devdoctor
 ```
 
-Run `gofmt` on changed Go files. CI also runs `golangci-lint` and cross-platform tests.
+Run `gofmt` on changed Go files. CI also runs `golangci-lint` and cross-platform tests. Changes to command execution must also pass `go test -race ./...` and platform-specific timeout, cancellation, output-flood, and descendant-cleanup tests.
 
 ## Design expectations
 
@@ -30,6 +30,10 @@ Run `gofmt` on changed Go files. CI also runs `golangci-lint` and cross-platform
 - Keep terminal rendering outside detectors and future diagnostic rules.
 - Prefer standard-library functionality and small, well-maintained dependencies.
 - Ensure redirected/non-interactive execution never waits for a prompt.
+- Accept executable paths and argument vectors, never shell command strings.
+- Bind every command to a canonical project root and revalidate approved filesystem identities before start.
+- Keep stdout and stderr independently bounded and treat incomplete process-tree cleanup as an error.
+- Never expose environment values in consent, logs, errors, or results.
 
 ## Adding detection support
 

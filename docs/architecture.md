@@ -48,3 +48,32 @@ Given the same readable project metadata, detector version, and options, discove
 ## Report compatibility
 
 JSON reports include a schema version. Fields may be added compatibly before v1, but consumers should reject unsupported major schema versions. Detector identifiers and future finding rule IDs become public compatibility surfaces once released.
+
+## Phase 2 command boundary
+
+Phase 2 adds reusable internal infrastructure; it does not add a command-selection feature or change the Phase 1 `ProjectReport` schema `1.0`.
+
+The command path is:
+
+```text
+CommandSpec
+    → project/cwd/executable preparation
+    → immutable exact consent request
+    → immediate identity revalidation
+    → shell-free runner
+    → bounded stdout/stderr + structured CommandResult
+```
+
+`internal/model` defines command classifications, environment declarations, stream captures, and lifecycle results. `internal/privacy.PathPolicy` canonicalizes the selected project root, requires working directories to remain within it, resolves the executable to an absolute regular file, and retains filesystem identities for pre-start revalidation.
+
+`internal/consent` fingerprints the complete immutable request. Grants exist only in memory and are limited to once, the exact check, or the exact request for the current run. A changed path, executable, argument, classification, limit, environment declaration, or data descriptor requires another decision.
+
+`internal/app.ExecutionService` owns the prepare → approve → revalidate → execute sequence. Denied or unavailable approval produces a structured skipped result and never reaches the runner.
+
+## Runner and process lifecycle
+
+`internal/runner` accepts only a prepared executable and argument vector. It never constructs a shell command and never implicitly invokes `sh`, `cmd.exe`, or PowerShell. A minimal platform environment is assembled from documented baseline names plus explicitly declared additions or overrides; `.env` files and shell profiles are not loaded.
+
+Stdout and stderr are drained independently. Each stream retains only its approved prefix while continuing to discard and count excess bytes, preventing pipe blockage and unbounded memory use. Captures remain in memory and include explicit captured, discarded, and truncation metadata.
+
+The runner records cancellation and timeout separately. On Unix it creates a dedicated process group, sends `SIGTERM`, waits the approved grace period, and escalates to `SIGKILL`. On Windows it starts the process suspended, assigns it to a kill-on-close Job Object before resuming its primary thread, and terminates the job on cancellation or timeout. Cleanup failure is reported separately without replacing the primary terminal state.
