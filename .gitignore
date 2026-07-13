@@ -1,0 +1,24 @@
+# Build artifacts
+/bin/
+/dist/
+/devdoctor
+/devdoctor.exe
+*.test
+*.out
+coverage.*
+
+# Local tooling
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Temporary diagnostic output
+.devdoctor/

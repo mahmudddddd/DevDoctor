@@ -1,0 +1,25 @@
+name: Detector request
+description: Propose support for a language, framework, runtime, or package manager
+title: "[Detector]: "
+labels: [enhancement, detector]
+body:
+  - type: input
+    id: technology
+    attributes:
+      label: Technology
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Reliable detection evidence
+      description: List manifests, lockfiles, config markers, or metadata that do not require executing project code.
+    validations:
+      required: true
+  - type: textarea
+    id: ambiguity
+    attributes:
+      label: Ambiguities and false positives
+      description: Explain where this evidence may be inconclusive.
+    validations:
+      required: true

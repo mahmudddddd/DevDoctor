@@ -1,0 +1,17 @@
+{
+  "name": "fixture-pnpm-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.12.0",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "dependencies": {
+    "@nestjs/core": "11.1.0",
+    "fastify": "5.4.0"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}
