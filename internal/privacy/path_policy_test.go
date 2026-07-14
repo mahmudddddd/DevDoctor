@@ -73,7 +73,7 @@ func TestPathPolicyRejectsUnsafeWorkingDirectories(t *testing.T) {
 func TestPathPolicyRejectsRelativeAndNonregularExecutables(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	_, err := NewPathPolicy().PrepareCommand(root, testCommandSpec("devdoctor", root))
+	_, err := NewPathPolicy().PrepareCommand(root, testCommandSpec("debugdoc", root))
 	if err == nil || !strings.Contains(err.Error(), "absolute") {
 		t.Fatalf("relative executable error = %v", err)
 	}

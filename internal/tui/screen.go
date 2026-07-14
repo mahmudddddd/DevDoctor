@@ -49,7 +49,7 @@ func homeContent(discoveryReport *model.ProjectReport) []string {
 func diagnoseContent(state RunState, projectPath string, discoveryReport *model.ProjectReport, runError string, width int) []string {
 	if state == StateRunning || state == StateWaiting {
 		return []string{
-			"Inspecting safe project metadata…",
+			"Inspecting project metadata",
 			"  " + middleElide(report.SafeText(projectPath), max(16, width-2)),
 			"",
 			"Scope",
@@ -172,7 +172,7 @@ func warningsContent(discoveryReport *model.ProjectReport, selected int, detail 
 			"",
 			"Recommendation",
 			"  Review the referenced metadata before choosing a project action.",
-			"  DevDoctor does not apply fixes in this phase.",
+			"  DebugDoc does not apply fixes in this phase.",
 		)
 	}
 
@@ -197,7 +197,7 @@ func exportContent(discoveryReport *model.ProjectReport, width int) []string {
 			"Next",
 			"  /diagnose   Inspect a project first",
 			"",
-			"For automation: devdoctor diagnose --path . --format text|json",
+			"For automation: debugdoc diagnose --path . --format text|json",
 		}
 	}
 
@@ -238,7 +238,7 @@ func helpContent() []string {
 		"  /warnings   Review warnings",
 		"  /export     Preview the report",
 		"  /help       Show help",
-		"  /quit       Exit DevDoctor",
+		"  /quit       Exit DebugDoc",
 		"",
 		"Keyboard",
 		"  Up/Down navigate   Enter select   Esc back",
@@ -246,7 +246,7 @@ func helpContent() []string {
 		"  Ctrl+C cancel, clear, or quit",
 		"",
 		"Privacy",
-		"  DevDoctor reads bounded local metadata only.",
+		"  DebugDoc reads bounded local metadata only.",
 		"  Arbitrary shell input is never executed.",
 	}
 }

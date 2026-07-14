@@ -1,2 +1,2 @@
-// Package version exposes DevDoctor build metadata.
+// Package version exposes DebugDoc build metadata.
 package version

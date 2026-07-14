@@ -32,25 +32,25 @@ type Dependencies struct {
 	RunInteractive func(context.Context, io.Reader, io.Writer, string, bool, DiscoveryService) error
 }
 
-// Execute runs the DevDoctor command with process-standard dependencies.
+// Execute runs the DebugDoc command with process-standard dependencies.
 func Execute() error {
 	command := NewRootCommand(Dependencies{})
 	return command.Execute()
 }
 
-// NewRootCommand constructs the DevDoctor command tree.
+// NewRootCommand constructs the DebugDoc command tree.
 func NewRootCommand(dependencies Dependencies) *cobra.Command {
 	dependencies = withDefaults(dependencies)
 
 	root := &cobra.Command{
-		Use:           "devdoctor",
+		Use:           "debugdoc",
 		Short:         "Diagnose why software projects fail to build or start",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Args:          cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
 			if !dependencies.IsInteractive() {
-				return fmt.Errorf("interactive mode requires a terminal; use 'devdoctor diagnose --path <directory>'")
+				return fmt.Errorf("interactive mode requires a terminal; use 'debugdoc diagnose --path <directory>'")
 			}
 			currentDirectory, err := dependencies.CurrentDir()
 			if err != nil {
@@ -95,7 +95,7 @@ func newDiagnoseCommand(dependencies Dependencies) *cobra.Command {
 func newVersionCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Show DevDoctor build information",
+		Short: "Show DebugDoc build information",
 		Args:  cobra.NoArgs,
 		RunE: func(command *cobra.Command, _ []string) error {
 			_, err := fmt.Fprintln(command.OutOrStdout(), version.String())

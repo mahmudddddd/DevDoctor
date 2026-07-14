@@ -31,7 +31,7 @@ func WriteJSON(writer io.Writer, report model.ProjectReport) error {
 func WriteText(writer io.Writer, report model.ProjectReport, options TextOptions) error {
 	var output strings.Builder
 
-	title := "DevDoctor project discovery"
+	title := "DebugDoc project discovery"
 	section := func(value string) string { return value }
 	warning := func(value string) string { return value }
 	if options.Color {

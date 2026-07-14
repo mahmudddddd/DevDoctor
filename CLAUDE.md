@@ -1,6 +1,6 @@
-# DevDoctor project instructions
+# DebugDoc project instructions
 
-DevDoctor is a local-first, deterministic, beginner-friendly diagnostic CLI. Preserve its safety, privacy, cross-platform, and non-interactive contracts.
+DebugDoc is a local-first, deterministic, beginner-friendly diagnostic CLI. Preserve its safety, privacy, cross-platform, and non-interactive contracts.
 
 ## Required reading for terminal UI work
 
@@ -15,7 +15,7 @@ A reusable read-only research/review agent is defined at `.claude/agents/tui-res
 
 ## Permanent terminal UI constraints
 
-- DevDoctor uses an original interface implemented with Bubble Tea and Lip Gloss.
+- DebugDoc uses an original interface implemented with Bubble Tea and Lip Gloss.
 - OpenAI Codex and Claude Code are research references, not templates to copy.
 - Do not copy branding, logos, branded assets, exact wording, exact command catalogs, exact color palettes, distinctive layouts, or large implementation blocks.
 - The root interactive command must use a full-screen, alternate-screen, in-place TUI.
@@ -26,13 +26,13 @@ A reusable read-only research/review agent is defined at `.claude/agents/tui-res
 - Running and lifecycle updates occur in place rather than as appended output.
 - Running, success, warning, failure, skipped, cancelled, and timed-out states must be explicit in text.
 - Honor `NO_COLOR`; provide ASCII/flat fallbacks; never rely on color, borders, symbols, or animation alone.
-- Arbitrary shell input must never be accepted. Composer text can resolve only to registered, typed DevDoctor actions.
+- Arbitrary shell input must never be accepted. Composer text can resolve only to registered, typed DebugDoc actions.
 
 ## Compatibility boundaries
 
 - Non-interactive CLI behavior must remain stable.
 - Redirected input/output must never open or wait on an interactive prompt.
-- Keep `devdoctor diagnose --path <directory> --format text|json` behavior stable unless separately approved.
+- Keep `debugdoc diagnose --path <directory> --format text|json` behavior stable unless separately approved.
 - Report schema `1.0` must remain unchanged unless a separate schema migration is explicitly approved.
 - UI work must not begin Phase 3 deterministic diagnostic functionality, add diagnostic rules, select project commands, or expand production capability by accident.
 - Keep terminal rendering in the presentation layer. Domain models, detectors, rules, privacy policy, consent, and runner packages must not depend on Bubble Tea or Lip Gloss.

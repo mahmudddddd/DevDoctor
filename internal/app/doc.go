@@ -1,2 +1,2 @@
-// Package app orchestrates DevDoctor application workflows.
+// Package app orchestrates DebugDoc application workflows.
 package app

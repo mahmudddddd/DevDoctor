@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if err := cli.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "devdoctor:", err)
+		fmt.Fprintln(os.Stderr, "debugdoc:", err)
 		os.Exit(1)
 	}
 }

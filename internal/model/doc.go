@@ -1,2 +1,2 @@
-// Package model contains serializable DevDoctor domain models.
+// Package model contains serializable DebugDoc domain models.
 package model

@@ -28,7 +28,7 @@ jobs:
       - run: git diff --exit-code
       - run: go vet ./...
       - run: go test ./...
-      - run: go build -trimpath ./cmd/devdoctor
+      - run: go build -trimpath ./cmd/debugdoc
 
   race:
     runs-on: ubuntu-latest

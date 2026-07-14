@@ -1,5 +1,5 @@
 name: Bug report
-description: Report incorrect or broken DevDoctor behavior
+description: Report incorrect or broken DebugDoc behavior
 title: "[Bug]: "
 labels: [bug]
 body:
@@ -9,7 +9,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: DevDoctor version or commit
+      label: DebugDoc version or commit
     validations:
       required: true
   - type: dropdown

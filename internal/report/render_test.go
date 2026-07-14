@@ -33,7 +33,7 @@ func TestWriteTextExplainsDiscoverySafety(t *testing.T) {
 	if err := WriteText(&output, testReport(), TextOptions{}); err != nil {
 		t.Fatalf("WriteText() error = %v", err)
 	}
-	for _, want := range []string{"DevDoctor project discovery", "JavaScript", "No project scripts were executed"} {
+	for _, want := range []string{"DebugDoc project discovery", "JavaScript", "No project scripts were executed"} {
 		if !strings.Contains(output.String(), want) {
 			t.Fatalf("output %q does not contain %q", output.String(), want)
 		}

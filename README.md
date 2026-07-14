@@ -1,19 +1,19 @@
-# DevDoctor
+# DebugDoc
 
-DevDoctor is a beginner-friendly command-line tool that explains why a software project fails to build or start.
+DebugDoc is a beginner-friendly command-line tool that explains why a software project fails to build or start.
 
 It detects a project's stack, checks common setup problems, and turns evidence into clear explanations and actionable next steps. Its core diagnostics are deterministic, local, and usable without AI.
 
-> **Status:** DevDoctor is in early development. Phase 1 provides safe project discovery for common Node.js and TypeScript projects on Windows, macOS, and Linux. Phase 2 adds an internal, consent-gated process-execution boundary for future checks. No current diagnostic executes project scripts.
+> **Status:** DebugDoc is in early development. Phase 1 provides safe project discovery for common Node.js and TypeScript projects on Windows, macOS, and Linux. Phase 2 adds an internal, consent-gated process-execution boundary for future checks. No current diagnostic executes project scripts.
 
-## Why DevDoctor?
+## Why DebugDoc?
 
-Build and startup errors often assume you already understand runtimes, package managers, ports, environment variables, Docker, and framework configuration. DevDoctor gathers that evidence in one place and explains it in beginner-friendly language.
+Build and startup errors often assume you already understand runtimes, package managers, ports, environment variables, Docker, and framework configuration. DebugDoc gathers that evidence in one place and explains it in beginner-friendly language.
 
 A future diagnostic finding will tell you:
 
 1. What failed
-2. What evidence DevDoctor found
+2. What evidence DebugDoc found
 3. What the evidence means
 4. What you can safely try next
 5. How to verify the fix
@@ -25,7 +25,7 @@ Prebuilt standalone binaries will be published for Windows, macOS, and Linux wit
 Go users can build the current development version with:
 
 ```bash
-go install github.com/mahmudddddd/DevDoctor/cmd/devdoctor@latest
+go install github.com/mahmudddddd/DevDoctor/cmd/debugdoc@latest
 ```
 
 ## Usage
@@ -33,28 +33,30 @@ go install github.com/mahmudddddd/DevDoctor/cmd/devdoctor@latest
 Open the full-screen interactive shell:
 
 ```bash
-devdoctor
+debugdoc
 ```
 
 Inspect a project without executing its scripts:
 
 ```bash
-devdoctor diagnose --path ./my-project
+debugdoc diagnose --path ./my-project
 ```
 
 Produce machine-readable output:
 
 ```bash
-devdoctor diagnose --path ./my-project --format json
+debugdoc diagnose --path ./my-project --format json
 ```
 
 Show build information:
 
 ```bash
-devdoctor version
+debugdoc version
 ```
 
-When input or output is redirected, DevDoctor never opens an interactive prompt. Use the `diagnose` command explicitly in scripts and CI.
+When input or output is redirected, DebugDoc never opens an interactive prompt. Use the `diagnose` command explicitly in scripts and CI.
+
+Set `DEBUGDOC_REDUCE_MOTION=1` to replace cosmetic terminal animation with static lifecycle labels. `TERM=dumb` also uses static ASCII presentation, while `NO_COLOR` disables color independently.
 
 ## Current project discovery
 
@@ -72,7 +74,7 @@ Support is documented by tested detector behavior rather than broad language cla
 
 ## Safety and privacy
 
-DevDoctor is local-first. By default, it does not:
+DebugDoc is local-first. By default, it does not:
 
 - Send project data anywhere
 - Use AI or require an account
@@ -88,7 +90,7 @@ See [docs/privacy.md](docs/privacy.md) for the privacy and trust model.
 
 ## Optional coding-agent assistance
 
-DevDoctor's core diagnostics will work without AI.
+DebugDoc's core diagnostics will work without AI.
 
 A later optional integration will be able to hand an approved, redacted diagnostic bundle to an installed Claude Code, Codex, Gemini, or compatible coding-agent CLI. Users will review the bundle and any proposed diff before data is shared or changes are applied.
 
@@ -98,13 +100,13 @@ The first milestone is a reliable deterministic diagnostic engine for common Nod
 
 ## Development
 
-DevDoctor targets the current and previous stable Go releases.
+DebugDoc targets the current and previous stable Go releases.
 
 ```bash
 go mod download
 go test ./...
 go vet ./...
-go build ./cmd/devdoctor
+go build ./cmd/debugdoc
 ```
 
 If `golangci-lint` and GoReleaser are installed:
@@ -132,4 +134,4 @@ Do not open public issues for suspected vulnerabilities or accidental secret exp
 
 ## License
 
-DevDoctor is released under the [MIT License](LICENSE).
+DebugDoc is released under the [MIT License](LICENSE).

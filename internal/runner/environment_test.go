@@ -10,27 +10,27 @@ import (
 )
 
 func TestBuildEnvironmentUsesMinimalBaselineAndExplicitValues(t *testing.T) {
-	t.Setenv("DEVDOCTOR_UNRELATED", "must-not-pass")
-	t.Setenv("DEVDOCTOR_SAFE_INPUT", "passed")
+	t.Setenv("DEBUGDOC_UNRELATED", "must-not-pass")
+	t.Setenv("DEBUGDOC_SAFE_INPUT", "passed")
 	environment, err := buildEnvironment(model.EnvironmentSpec{
-		Pass: []string{"DEVDOCTOR_SAFE_INPUT"},
-		Set:  map[string]string{"DEVDOCTOR_SAFE_OVERRIDE": "set"},
+		Pass: []string{"DEBUGDOC_SAFE_INPUT"},
+		Set:  map[string]string{"DEBUGDOC_SAFE_OVERRIDE": "set"},
 	})
 	if err != nil {
 		t.Fatalf("buildEnvironment() error = %v", err)
 	}
 	joined := strings.Join(environment, "\n")
-	if strings.Contains(joined, "DEVDOCTOR_UNRELATED=") {
+	if strings.Contains(joined, "DEBUGDOC_UNRELATED=") {
 		t.Fatal("unrelated host environment was inherited")
 	}
-	if !strings.Contains(joined, "DEVDOCTOR_SAFE_INPUT=passed") || !strings.Contains(joined, "DEVDOCTOR_SAFE_OVERRIDE=set") {
+	if !strings.Contains(joined, "DEBUGDOC_SAFE_INPUT=passed") || !strings.Contains(joined, "DEBUGDOC_SAFE_OVERRIDE=set") {
 		t.Fatalf("explicit environment missing from %q", joined)
 	}
 }
 
 func TestBuildEnvironmentDoesNotLoadDotEnv(t *testing.T) {
 	directory := t.TempDir()
-	if err := os.WriteFile(filepath.Join(directory, ".env"), []byte("DEVDOCTOR_DOTENV=loaded\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(directory, ".env"), []byte("DEBUGDOC_DOTENV=loaded\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	oldWorkingDirectory, err := os.Getwd()
@@ -46,7 +46,7 @@ func TestBuildEnvironmentDoesNotLoadDotEnv(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(strings.Join(environment, "\n"), "DEVDOCTOR_DOTENV=") {
+	if strings.Contains(strings.Join(environment, "\n"), "DEBUGDOC_DOTENV=") {
 		t.Fatal(".env content was loaded")
 	}
 }

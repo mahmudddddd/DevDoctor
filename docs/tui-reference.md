@@ -2,7 +2,7 @@
 
 > Research date: 2026-07-13
 >
-> Purpose: record public terminal-interface research that can inform an original DevDoctor TUI. This is an architectural reference, not a template or permission to copy another product's implementation, wording, branding, assets, or visual identity.
+> Purpose: record public terminal-interface research that can inform an original DebugDoc TUI. This is an architectural reference, not a template or permission to copy another product's implementation, wording, branding, assets, or visual identity.
 
 ## Research boundaries
 
@@ -10,7 +10,7 @@ The research pass examined:
 
 - The official, public [OpenAI Codex repository](https://github.com/openai/codex), with emphasis on the current Rust terminal UI under `codex-rs/tui`.
 - Official Claude Code documentation and behavior exposed by the locally installed `claude --help` command.
-- DevDoctor's existing CLI, report renderer, safety model, and terminal behavior.
+- DebugDoc's existing CLI, report renderer, safety model, and terminal behavior.
 
 Claude Code source code was **not** inspected. No official public Claude Code source repository was found or used. Claude observations below are limited to official documentation and locally observable command-line behavior.
 
@@ -41,7 +41,7 @@ Upstream `main` branches change. Exact Codex paths below describe the repository
 - [Security](https://code.claude.com/docs/en/security)
 - Locally observable `claude --help` output on 2026-07-13
 
-### DevDoctor
+### DebugDoc
 
 - `internal/cli/root.go`
 - `internal/cli/interactive.go`
@@ -137,11 +137,11 @@ Upstream `main` branches change. Exact Codex paths below describe the repository
 
 ### Separate state from terminal mechanics
 
-Codex separates terminal setup/event translation, application coordination, content state, input composition, overlays, keymaps, and paging. The useful principle is the boundary, not the exact module graph. DevDoctor should keep the diagnostic/report domain independent of wrapping, styles, terminal capabilities, and Bubble Tea messages.
+Codex separates terminal setup/event translation, application coordination, content state, input composition, overlays, keymaps, and paging. The useful principle is the boundary, not the exact module graph. DebugDoc should keep the diagnostic/report domain independent of wrapping, styles, terminal capabilities, and Bubble Tea messages.
 
 ### Model committed content and active work separately
 
-Codex distinguishes committed transcript history from the active streaming cell. DevDoctor has no need for a chat transcript, but it does need an equivalent distinction between stable completed report sections and transient running progress. A redraw or resize must not mutate the report or convert transient text into durable evidence.
+Codex distinguishes committed transcript history from the active streaming cell. DebugDoc has no need for a chat transcript, but it does need an equivalent distinction between stable completed report sections and transient running progress. A redraw or resize must not mutate the report or convert transient text into durable evidence.
 
 ### Preserve the user's scroll intent
 
@@ -151,7 +151,7 @@ A strong viewport invariant is visible in the pager design:
 - If the user has scrolled up, updates preserve that position.
 - Returning to live follow is explicit and discoverable.
 
-DevDoctor should implement the same behavior for running checks and result updates.
+DebugDoc should implement the same behavior for running checks and result updates.
 
 ### Route modal input before global input
 
@@ -159,15 +159,15 @@ Active overlays and local views receive key events before the application shell.
 
 ### Reflow logical content, not previously rendered strings
 
-Codex retains width-aware logical renderables and recalculates wrapped height on resize. DevDoctor should retain report blocks or rows as structured data and render them at the current width. Re-wrapping strings that already contain padding or ANSI sequences produces drift, clipping, and incorrect scroll offsets.
+Codex retains width-aware logical renderables and recalculates wrapped height on resize. DebugDoc should retain report blocks or rows as structured data and render them at the current width. Re-wrapping strings that already contain padding or ANSI sequences produces drift, clipping, and incorrect scroll offsets.
 
 ### Centralize and validate keyboard behavior
 
-Codex uses context-aware keymaps and validates conflicts and reserved bindings. DevDoctor's initial keymap can be much smaller, but every displayed hint should come from the same binding definitions used by event routing. Modal precedence and conflicts should be testable.
+Codex uses context-aware keymaps and validates conflicts and reserved bindings. DebugDoc's initial keymap can be much smaller, but every displayed hint should come from the same binding definitions used by event routing. Modal precedence and conflicts should be testable.
 
 ### Coalesce redraws and clean up terminal modes
 
-The render lifecycle batches state changes into a draw, performs pre-draw updates, renders once, positions the cursor, and restores terminal state on normal exit or panic. Bubble Tea supplies much of this lifecycle, but DevDoctor still needs explicit cancellation, terminal restoration tests, and nonblocking commands.
+The render lifecycle batches state changes into a draw, performs pre-draw updates, renders once, positions the cursor, and restores terminal state on normal exit or panic. Bubble Tea supplies much of this lifecycle, but DebugDoc still needs explicit cancellation, terminal restoration tests, and nonblocking commands.
 
 ## Codex test strategy observations
 
@@ -180,13 +180,13 @@ The TUI combines inline unit tests, rendering/snapshot-oriented tests, a test te
 - Popup selection and dismissal behavior.
 - Status and active-cell state accessors for deterministic assertions.
 
-DevDoctor should test its pure `Update` transitions and `View` output independently, then add a small PTY/terminal smoke-test layer for alternate-screen entry, resize, cancellation, and restoration.
+DebugDoc should test its pure `Update` transitions and `View` output independently, then add a small PTY/terminal smoke-test layer for alternate-screen entry, resize, cancellation, and restoration.
 
 ## Accessibility and no-color observations
 
 Codex style guidance recommends terminal-default foreground for ordinary text and textual or symbolic status in addition to color. `color.rs` includes terminal color and luminance utilities. The inspected source did not establish an explicit `NO_COLOR` path or a documented user-facing no-color flag. Do not infer one.
 
-DevDoctor must go further:
+DebugDoc must go further:
 
 - Honor `NO_COLOR` explicitly.
 - Never use hue as the only state signal.
@@ -206,7 +206,7 @@ These are public or locally observable behaviors, not implementation claims.
 - Permission/trust behavior is explicit. The working directory and permission mode are meaningful trust boundaries; non-interactive operation cannot depend on an unavailable prompt.
 - Local help documents a screen-reader-oriented mode that uses flatter text and removes decorative borders or animations.
 - Official documentation exposes light, dark, daltonized, and ANSI-oriented theme behavior, but no dedicated `--no-color` flag was found in the sources examined.
-- Public status surfaces expose permission state and attention needs. The documentation does not define a universal internal running/success/warning/failure state machine, so DevDoctor should define its own.
+- Public status surfaces expose permission state and attention needs. The documentation does not define a universal internal running/success/warning/failure state machine, so DebugDoc should define its own.
 
 ### Claude research limitations
 
@@ -216,11 +216,11 @@ These are public or locally observable behaviors, not implementation claims.
 - Observed help text proves only the public interface present in the installed build, not its internal architecture.
 - No user screenshots were supplied for this research pass.
 
-## Reusable interaction patterns for DevDoctor
+## Reusable interaction patterns for DebugDoc
 
 1. **Full-screen root shell:** launch the interactive root command directly into one alternate-screen application instead of printing a report and then opening controls.
 2. **Persistent composer:** retain one compact input/action area at the bottom of the shell across views.
-3. **Allowlisted slash palette:** typing `/` opens a filtered list of known DevDoctor actions. Slash commands resolve to typed internal actions; they are never shell strings.
+3. **Allowlisted slash palette:** typing `/` opens a filtered list of known DebugDoc actions. Slash commands resolve to typed internal actions; they are never shell strings.
 4. **One active primary view:** show home, project selection, running diagnostics, results, details, consent, or error as the single primary view. Use overlays only for short choices or help.
 5. **Scrollable viewport:** preserve bottom-follow and manual-scroll intent, expose position when not at the bottom, and keep wrapping deterministic across resize.
 6. **Compact context header:** show product name, project/root context, and current run state without a dashboard-sized banner.
@@ -231,7 +231,7 @@ These are public or locally observable behaviors, not implementation claims.
 11. **Responsive composition:** reduce decoration and optional metadata before truncating primary content or controls.
 12. **Accessible fallback:** retain semantic labels, flat output, no-color behavior, and non-interactive commands.
 
-## Patterns unsuitable for DevDoctor
+## Patterns unsuitable for DebugDoc
 
 - Chat-specific streaming, image attachment, mention, side-conversation, app-server, or agent-orchestration complexity.
 - Copying Codex or Claude command names, branded text, logos, symbols, palette, spacing, or screen layouts.
@@ -300,7 +300,7 @@ Unknown commands show an inline error and suggestions. Never pass the raw string
 ### Compatibility
 
 - Keep Cobra's explicit non-interactive commands unchanged.
-- Keep `devdoctor diagnose --path ... --format text|json` stable.
+- Keep `debugdoc diagnose --path ... --format text|json` stable.
 - Keep report schema `1.0` unchanged until a separate schema migration is approved.
 - Do not expose diagnostic rules or command selection that belongs to Phase 3.
 - Preserve exact consent, revalidation, timeout, cancellation, bounded output, process-tree cleanup, and fail-closed behavior.
@@ -309,9 +309,9 @@ Unknown commands show an inline error and suggestions. Never pass the raw string
 
 The Codex repository is licensed under Apache License 2.0 and includes a `NOTICE` file. Architecture and interaction ideas may be studied and independently reimplemented. Copying source or other protected material would introduce Apache notice, license, marking, and attribution obligations in addition to project policy concerns.
 
-For DevDoctor:
+For DebugDoc:
 
-- Keep the implementation original and compatible with DevDoctor's MIT license.
+- Keep the implementation original and compatible with DebugDoc's MIT license.
 - Do not copy large or distinctive code blocks, exact text, logos, branded assets, command catalogs, or exact palettes.
 - Do not imply endorsement by OpenAI or Anthropic.
 - Attribute research inspiration in documentation where useful.

@@ -1,2 +1,2 @@
-// Package report renders DevDoctor reports for people and automation.
+// Package report renders DebugDoc reports for people and automation.
 package report

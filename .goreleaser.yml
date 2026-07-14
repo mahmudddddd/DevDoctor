@@ -1,15 +1,15 @@
 version: 2
 
-project_name: devdoctor
+project_name: debugdoc
 
 before:
   hooks:
     - go test ./...
 
 builds:
-  - id: devdoctor
-    main: ./cmd/devdoctor
-    binary: devdoctor
+  - id: debugdoc
+    main: ./cmd/debugdoc
+    binary: debugdoc
     env:
       - CGO_ENABLED=0
     goos:

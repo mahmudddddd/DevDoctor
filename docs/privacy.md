@@ -1,6 +1,6 @@
 # Privacy and trust model
 
-DevDoctor is local-first. Phase 1 performs no telemetry, uploads, AI calls, dependency installation, project-script execution, or network diagnostics.
+DebugDoc is local-first. Phase 1 performs no telemetry, uploads, AI calls, dependency installation, project-script execution, or network diagnostics.
 
 ## Data read during discovery
 
@@ -32,7 +32,7 @@ Later phases require specific approval before build/start commands, network chec
 
 ## Coding-agent integrations
 
-Agents are optional and untrusted. The deterministic core remains available without them. Before any handoff, DevDoctor will show the exact included files, metadata, and logs; exclusions; redaction counts; bundle size; and selected provider. Agent text cannot bypass command, path, privacy, or mutation policy.
+Agents are optional and untrusted. The deterministic core remains available without them. Before any handoff, DebugDoc will show the exact included files, metadata, and logs; exclusions; redaction counts; bundle size; and selected provider. Agent text cannot bypass command, path, privacy, or mutation policy.
 
 ## Telemetry
 
@@ -42,7 +42,7 @@ There is no telemetry in the MVP. Any future proposal must be opt-in, documented
 
 Phase 2 introduces an internal execution boundary but does not wire project commands into `diagnose`.
 
-Before consent, DevDoctor canonicalizes the selected project root and working directory, rejects working directories outside the root, resolves the executable to an absolute regular file, and records filesystem identities. The same identities are checked immediately before process start; a changed path requires a new preparation and approval.
+Before consent, DebugDoc canonicalizes the selected project root and working directory, rejects working directories outside the root, resolves the executable to an absolute regular file, and records filesystem identities. The same identities are checked immediately before process start; a changed path requires a new preparation and approval.
 
 Consent displays the operation ID and purpose, exact executable and argument boundaries, canonical working directory, mutation/network/service classifications, timeout and termination grace, independent stream limit, environment variable names, and declared data descriptors. Environment values are never shown, logged, or returned. Grants are in-memory only and are scoped to once, the exact check, or the exact request for the current run. Non-interactive approval is unavailable and fails closed without reading stdin.
 

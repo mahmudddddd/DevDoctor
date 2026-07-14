@@ -56,19 +56,21 @@ const (
 
 // Capabilities controls terminal presentation without changing information.
 type Capabilities struct {
-	Color bool
-	ASCII bool
-	Flat  bool
+	Color  bool
+	ASCII  bool
+	Flat   bool
+	Motion bool
 }
 
 // Config supplies the TUI with presentation and discovery dependencies.
 type Config struct {
-	Context     context.Context
-	ProjectPath string
-	Discover    DiscoverFunc
-	Color       bool
-	ASCII       bool
-	Flat        bool
+	Context      context.Context
+	ProjectPath  string
+	Discover     DiscoverFunc
+	Color        bool
+	ASCII        bool
+	Flat         bool
+	ReduceMotion bool
 }
 
 func (screen Screen) String() string {

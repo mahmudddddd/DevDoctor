@@ -2,7 +2,7 @@
 
 ## Goals
 
-DevDoctor is a standalone, local-first CLI that turns project evidence into deterministic, beginner-friendly diagnostics. The architecture must keep working when the target runtime is missing, avoid trusting project content, and support Windows, macOS, and Linux.
+DebugDoc is a standalone, local-first CLI that turns project evidence into deterministic, beginner-friendly diagnostics. The architecture must keep working when the target runtime is missing, avoid trusting project content, and support Windows, macOS, and Linux.
 
 ## Layers
 
@@ -22,7 +22,7 @@ Phase 1 implements CLI presentation, safe discovery, a file policy, structured p
 
 ## Package responsibilities
 
-- `cmd/devdoctor`: executable entry point only.
+- `cmd/debugdoc`: executable entry point only.
 - `internal/cli`: Cobra commands, TTY policy, consent adapters, and dependency wiring.
 - `internal/tui`: Bubble Tea interactive state, typed actions, responsive layout, viewport, and terminal rendering.
 - `internal/app`: use-case orchestration without terminal formatting.
@@ -36,7 +36,7 @@ Future packages add fact collectors, deterministic rules, bounded process execut
 
 ## Dependency direction
 
-Presentation depends on application workflows and models. The full-screen TUI consumes structured reports and resolves only registered DevDoctor actions; it does not parse report text or accept shell commands. Application workflows depend on detectors and policies. Detectors return structured data and never print. Domain models do not depend on Cobra, Bubble Tea, Huh, terminal styling, or external agents.
+Presentation depends on application workflows and models. The full-screen TUI consumes structured reports and resolves only registered DebugDoc actions; it does not parse report text or accept shell commands. Application workflows depend on detectors and policies. Detectors return structured data and never print. Domain models do not depend on Cobra, Bubble Tea, Huh, terminal styling, or external agents.
 
 ## Untrusted input
 

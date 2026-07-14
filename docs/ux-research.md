@@ -1,6 +1,6 @@
 # Terminal UX research
 
-This note records public terminal-interface research used to guide DevDoctor. It is not a specification for copying another product. DevDoctor remains an original, deterministic, beginner-focused diagnostic tool rather than a conversational coding interface.
+This note records public terminal-interface research used to guide DebugDoc. It is not a specification for copying another product. DebugDoc remains an original, deterministic, beginner-focused diagnostic tool rather than a conversational coding interface.
 
 Research reviewed on 2026-07-13:
 
@@ -56,14 +56,14 @@ Useful patterns:
 - Automation fails closed when approval cannot be requested.
 - Plain output and native terminal scrollback remain important fallbacks.
 
-## DevDoctor-specific UX decisions
+## DebugDoc-specific UX decisions
 
-DevDoctor should borrow principles, not product identity or conversational structure.
+DebugDoc should borrow principles, not product identity or conversational structure.
 
 ### 1. Guided by default, scriptable by design
 
-- `devdoctor` opens a short guided menu only when stdin and stdout are terminals.
-- `devdoctor diagnose` is the explicit automation path.
+- `debugdoc` opens a short guided menu only when stdin and stdout are terminals.
+- `debugdoc diagnose` is the explicit automation path.
 - Redirected or CI execution never waits for a prompt.
 - Text is the human default; versioned JSON is the stable machine format.
 
@@ -81,7 +81,7 @@ A generic spinner must never hide an approval wait.
 
 ### 3. Use diagnostic phases, not a chat transcript
 
-DevDoctor's durable hierarchy should be:
+DebugDoc's durable hierarchy should be:
 
 ```text
 Diagnostic run
@@ -95,7 +95,7 @@ Transient progress can be redrawn, but completed evidence and final findings mus
 
 Beginner-facing output should answer:
 
-1. What DevDoctor inspected
+1. What DebugDoc inspected
 2. What it detected
 3. What was skipped and why
 4. What failed
@@ -126,7 +126,7 @@ Future long-running checks should support Ctrl+C, stop the full process tree, pr
 
 ### 8. Keep agent UX subordinate to deterministic diagnosis
 
-Optional coding-agent assistance should appear only after local deterministic findings. The interface should identify the selected provider, show the exact redacted bundle, and distinguish agent hypotheses from DevDoctor evidence. Agent suggestions cannot change approval, path, privacy, or command policy.
+Optional coding-agent assistance should appear only after local deterministic findings. The interface should identify the selected provider, show the exact redacted bundle, and distinguish agent hypotheses from DebugDoc evidence. Agent suggestions cannot change approval, path, privacy, or command policy.
 
 ## Phase 1 application
 

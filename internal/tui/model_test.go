@@ -36,10 +36,13 @@ func TestSlashCommandSelectionRunsDiscoveryAndShowsResults(t *testing.T) {
 	if model.state != StateRunning || model.screen != ScreenDiagnose || command == nil {
 		t.Fatalf("after selection state/screen/cmd = %s/%s/%v", model.state, model.screen, command != nil)
 	}
-	message := command()
+	message := discoveryMessage(t, command)
 	model = updateModel(t, model, message)
 	if calls != 1 || model.state != StateOK || model.report == nil {
 		t.Fatalf("calls/state/report = %d/%s/%v, want 1/OK/non-nil", calls, model.state, model.report != nil)
+	}
+	if model.transient.text != "Diagnosis complete" {
+		t.Fatalf("completion footer = %q", model.transient.text)
 	}
 }
 
@@ -115,9 +118,12 @@ func TestDiscoveryFailureAndCancellationAreExplicit(t *testing.T) {
 			}})
 			started, command := model.startDiscovery()
 			model = started.(Model)
-			model = updateModel(t, model, command())
+			model = updateModel(t, model, discoveryMessage(t, command))
 			if model.state != test.state {
 				t.Fatalf("state = %s, want %s", model.state, test.state)
+			}
+			if model.transient.text == "" {
+				t.Fatalf("%s transition did not set a footer message", test.state)
 			}
 			if strings.Contains(model.View(), "\x1b[31mproject") {
 				t.Fatalf("View() contains raw terminal control sequence")
@@ -227,7 +233,7 @@ func TestNoColorAndASCIIFallback(t *testing.T) {
 
 func TestHelpFitsAtMinimumSizeWithPersistentComposerAndOneRowFooter(t *testing.T) {
 	t.Parallel()
-	model := NewModel(Config{ProjectPath: `C:\DevDoctor`, ASCII: true})
+	model := NewModel(Config{ProjectPath: `C:\DebugDoc`, ASCII: true})
 	model.navigateTo(ScreenHelp)
 	model = updateModel(t, model, tea.WindowSizeMsg{Width: 80, Height: 24})
 
@@ -265,13 +271,16 @@ func TestComposerRemainsVisibleAtSupportedSizes(t *testing.T) {
 
 func TestHeaderAvoidsDuplicateBrandingAndReportRows(t *testing.T) {
 	t.Parallel()
-	model := NewModel(Config{ProjectPath: `C:\workspace\DevDoctor`, ASCII: true})
+	model := NewModel(Config{ProjectPath: `C:\workspace\DebugDoc`, ASCII: true})
 	view := model.View()
-	if strings.Contains(view, "DevDoctor  DevDoctor") || strings.Contains(view, "View:") || strings.Contains(view, "Root:") {
+	if strings.Contains(view, "DebugDoc  DebugDoc") || strings.Contains(view, "View:") || strings.Contains(view, "Root:") {
 		t.Fatalf("header retained duplicate/report-like rows: %q", view)
 	}
-	if strings.Count(strings.Split(view, "\n")[0], "DevDoctor") != 1 {
+	if strings.Count(strings.Split(view, "\n")[0], "DebugDoc") != 1 {
 		t.Fatalf("product identity is duplicated: %q", strings.Split(view, "\n")[0])
+	}
+	if strings.Contains(view, "Dev"+"Doctor") {
+		t.Fatalf("legacy product identity remains in TUI: %q", view)
 	}
 	separatorLines := 0
 	for _, line := range strings.Split(view, "\n") {
@@ -287,7 +296,7 @@ func TestHeaderAvoidsDuplicateBrandingAndReportRows(t *testing.T) {
 func TestHeaderContainsEachViewNameOnlyOnce(t *testing.T) {
 	t.Parallel()
 	for _, screen := range []Screen{ScreenHome, ScreenDiagnose, ScreenProject, ScreenWarnings, ScreenExport, ScreenHelp} {
-		model := NewModel(Config{ProjectPath: `C:\DevDoctor`, ASCII: true, Flat: true})
+		model := NewModel(Config{ProjectPath: `C:\DebugDoc`, ASCII: true, Flat: true})
 		model.report = reportPointer(sampleReport())
 		model.showScreen(screen)
 		view := model.View()
@@ -299,7 +308,7 @@ func TestHeaderContainsEachViewNameOnlyOnce(t *testing.T) {
 
 func TestReadableWidthAndTwoRowBottomArea(t *testing.T) {
 	t.Parallel()
-	model := NewModel(Config{ProjectPath: `C:\DevDoctor`, ASCII: true, Flat: true})
+	model := NewModel(Config{ProjectPath: `C:\DebugDoc`, ASCII: true, Flat: true})
 	model = updateModel(t, model, tea.WindowSizeMsg{Width: 120, Height: 40})
 	if model.layout.ContentWidth != 88 {
 		t.Fatalf("content width = %d, want 88", model.layout.ContentWidth)
@@ -308,7 +317,7 @@ func TestReadableWidthAndTwoRowBottomArea(t *testing.T) {
 		t.Fatalf("bottom layout = %#v, want one divider plus two rows", model.layout)
 	}
 	view := model.View()
-	if strings.Contains(view, "Registered DevDoctor actions only") {
+	if strings.Contains(view, "Registered DebugDoc actions only") {
 		t.Fatalf("idle composer repeats safety guidance: %q", view)
 	}
 	for _, line := range strings.Split(view, "\n") {
@@ -461,6 +470,22 @@ func TestCtrlLStillRequestsRedraw(t *testing.T) {
 	if command == nil {
 		t.Fatal("Ctrl+L did not return a redraw command")
 	}
+}
+
+func discoveryMessage(t *testing.T, command tea.Cmd) tea.Msg {
+	t.Helper()
+	if command == nil {
+		t.Fatal("discovery command is nil")
+	}
+	message := command()
+	batch, ok := message.(tea.BatchMsg)
+	if !ok {
+		return message
+	}
+	if len(batch) == 0 || batch[0] == nil {
+		t.Fatal("discovery batch has no discovery command")
+	}
+	return batch[0]()
 }
 
 func updateModel(t *testing.T, model Model, message tea.Msg) Model {

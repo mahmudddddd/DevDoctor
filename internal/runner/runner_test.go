@@ -18,7 +18,7 @@ import (
 	"github.com/mahmudddddd/DevDoctor/internal/privacy"
 )
 
-const helperEnvironmentName = "GO_WANT_DEVDOCTOR_HELPER"
+const helperEnvironmentName = "GO_WANT_DEBUGDOC_HELPER"
 
 func TestRunnerPreservesArgumentsWithoutShellInterpretation(t *testing.T) {
 	t.Parallel()

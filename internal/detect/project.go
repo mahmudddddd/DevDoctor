@@ -151,7 +151,7 @@ func (d ProjectDetector) Discover(ctx context.Context, root string) (model.Proje
 	if lockfileManagerCount > 1 {
 		summary.Warnings = append(summary.Warnings, model.Warning{
 			Code:     "package-manager.conflicting-lockfiles",
-			Message:  "Lockfiles from more than one package manager were found. DevDoctor will not guess which one should be used.",
+			Message:  "Lockfiles from more than one package manager were found. DebugDoc will not guess which one should be used.",
 			Evidence: onlyFileEvidence(lockfileEvidence),
 		})
 	}

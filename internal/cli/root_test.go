@@ -24,6 +24,24 @@ func (f *fakeDiscovery) Diagnose(_ context.Context, path string) (model.ProjectR
 	return f.report, f.err
 }
 
+func TestRootHelpUsesDebugDocCommandName(t *testing.T) {
+	t.Parallel()
+	var output bytes.Buffer
+	command := NewRootCommand(Dependencies{
+		Input:         strings.NewReader(""),
+		Output:        &output,
+		ErrorOutput:   &output,
+		IsInteractive: func() bool { return false },
+	})
+	command.SetArgs([]string{"--help"})
+	if err := command.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	if !strings.Contains(output.String(), "Usage:\n  debugdoc") {
+		t.Fatalf("help does not use debugdoc command name: %q", output.String())
+	}
+}
+
 func TestRootWithoutArgumentsDoesNotPromptWhenNonInteractive(t *testing.T) {
 	t.Parallel()
 	var output bytes.Buffer
@@ -39,8 +57,8 @@ func TestRootWithoutArgumentsDoesNotPromptWhenNonInteractive(t *testing.T) {
 	command.SetArgs(nil)
 
 	err := command.Execute()
-	if err == nil || !strings.Contains(err.Error(), "interactive mode requires a terminal") {
-		t.Fatalf("Execute() error = %v, want non-interactive guidance", err)
+	if err == nil || !strings.Contains(err.Error(), "interactive mode requires a terminal") || !strings.Contains(err.Error(), "debugdoc diagnose") {
+		t.Fatalf("Execute() error = %v, want debugdoc non-interactive guidance", err)
 	}
 	if discovery.calls != 0 {
 		t.Fatalf("discovery calls = %d, want 0", discovery.calls)
@@ -183,7 +201,7 @@ func TestDiagnoseTextAndVersionRemainAvailable(t *testing.T) {
 	if err := command.Execute(); err != nil {
 		t.Fatalf("diagnose Execute() error = %v", err)
 	}
-	if !strings.Contains(output.String(), "DevDoctor project discovery") || !strings.Contains(output.String(), "Report schema: 1.0") {
+	if !strings.Contains(output.String(), "DebugDoc project discovery") || !strings.Contains(output.String(), "Report schema: 1.0") {
 		t.Fatalf("diagnose output = %q", output.String())
 	}
 

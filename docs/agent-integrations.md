@@ -1,6 +1,6 @@
 # Coding-agent integrations
 
-Coding-agent support is planned after deterministic diagnosis is reliable. DevDoctor will not require an agent, account, API key, or network connection for its core behavior.
+Coding-agent support is planned after deterministic diagnosis is reliable. DebugDoc will not require an agent, account, API key, or network connection for its core behavior.
 
 ## Adapter boundary
 
@@ -18,4 +18,4 @@ A provider-neutral adapter will expose discovery, capabilities, request preparat
 8. Require explicit diff approval before a later mutation phase.
 9. Rerun the approved deterministic verification command.
 
-Project files and logs may contain prompt-injection text. They are data, not instructions, and cannot alter DevDoctor policy.
+Project files and logs may contain prompt-injection text. They are data, not instructions, and cannot alter DebugDoc policy.

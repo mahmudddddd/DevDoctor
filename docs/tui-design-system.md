@@ -1,6 +1,6 @@
-# DevDoctor terminal UI design system
+# DebugDoc terminal UI design system
 
-This document is the permanent interaction and presentation contract for DevDoctor's interactive terminal UI. It defines behavior for future implementation; it does not itself authorize new diagnostics, commands, report fields, or production behavior.
+This document is the permanent interaction and presentation contract for DebugDoc's interactive terminal UI. It defines behavior for future implementation; it does not itself authorize new diagnostics, commands, report fields, or production behavior.
 
 The interface must be visually original. Codex and Claude Code are research references, not templates.
 
@@ -11,7 +11,7 @@ The interface must be visually original. Codex and Claude Code are research refe
 3. **Keyboard first.** Every action is reachable without a mouse. Mouse support, if later added, is optional and never changes the information model.
 4. **Stable under change.** Resize, progress, and in-place updates preserve focus, draft text, selected item, and deliberate scroll position.
 5. **Semantic without color.** Words and structure carry meaning; color only reinforces it.
-6. **Safe by construction.** The composer accepts registered DevDoctor actions, never arbitrary shell input.
+6. **Safe by construction.** The composer accepts registered DebugDoc actions, never arbitrary shell input.
 7. **Scriptable separately.** The alternate-screen root shell does not replace or alter non-interactive Cobra commands.
 8. **Beginner legibility.** Prefer plain language, visible scope, and one recommended next step over dense telemetry.
 
@@ -21,7 +21,7 @@ Present information in this order:
 
 1. **Safety-critical interruption or consent**: what is requested, scope, consequence, and choice.
 2. **Current run state**: running, waiting, success, warning, failure, cancelled, timed out, or skipped.
-3. **Primary finding or current task**: what DevDoctor is checking or what needs attention.
+3. **Primary finding or current task**: what DebugDoc is checking or what needs attention.
 4. **Evidence and explanation**: why the state or finding exists.
 5. **Next safe action**: a registered action the user can take.
 6. **Project context**: selected root, detected stack, and report metadata.
@@ -50,7 +50,7 @@ The frame uses terminal-default background. Outer margins are at most one cell p
 
 ### Required content
 
-- `DevDoctor` product name in plain text.
+- `DebugDoc` product name in plain text.
 - Selected project name or `No project selected`.
 - Short current state label.
 
@@ -116,7 +116,7 @@ The composer is persistent except when a full-screen safety-critical consent vie
 
 ### Layout
 
-- Prompt marker: original DevDoctor marker such as `doctor>` in color mode and `>` in ASCII/flat mode.
+- Prompt marker: original DebugDoc marker such as `doctor>` in color mode and `>` in ASCII/flat mode.
 - One row when empty; grows to a maximum of three text rows at 80x24 and four rows at larger sizes.
 - Overflow scrolls inside the composer rather than consuming the viewport.
 - Inline validation appears directly above or below the input and uses a full sentence.
@@ -128,7 +128,7 @@ The composer is persistent except when a full-screen safety-critical consent vie
 - `Enter` selects a palette item or submits a complete registered action.
 - `Esc` closes the palette before clearing a draft.
 - `Ctrl+C` interrupts active work; when idle it clears nonempty input before a second deliberate quit action.
-- Multiline input is not required for the initial TUI. Do not add it without a defined DevDoctor use case.
+- Multiline input is not required for the initial TUI. Do not add it without a defined DebugDoc use case.
 
 ## Slash-command palette
 
@@ -147,7 +147,7 @@ Each command has:
 
 - Filter case-insensitively by command name and description.
 - Show only currently available commands by default.
-- Unknown input shows `No matching DevDoctor command` and does not submit.
+- Unknown input shows `No matching DebugDoc command` and does not submit.
 - Selection is indicated by `>` in all modes; color or background may reinforce it.
 - Maximum width: `min(72, terminal width - 4)`.
 - Maximum height: `min(12, viewport height - 2)`.
@@ -234,7 +234,7 @@ The required support matrix is 80x24, 100x30, and 120x40.
 
 Below 80 columns or 24 rows, render a stable limited view:
 
-- State that DevDoctor needs at least 80x24 for the interactive shell.
+- State that DebugDoc needs at least 80x24 for the interactive shell.
 - Show current size.
 - Preserve active work, focus intent, and draft state.
 - Allow cancellation and quit.
@@ -312,13 +312,13 @@ Do not communicate hierarchy through color alone. Avoid all-uppercase paragraphs
 
 ## Semantic colors
 
-Colors are DevDoctor-specific semantic tokens, not a copied palette. Exact terminal output may be adapted to ANSI capability.
+Colors are DebugDoc-specific semantic tokens, not a copied palette. Exact terminal output may be adapted to ANSI capability.
 
 | Token | Suggested truecolor | Meaning |
 | --- | --- | --- |
 | `text` | terminal default | Body content |
 | `muted` | `#8E98A4` | Secondary metadata and hints |
-| `accent` | `#58B7A8` | Focus, selected safe action, DevDoctor identity |
+| `accent` | `#58B7A8` | Focus, selected safe action, DebugDoc identity |
 | `info` | `#6FA8DC` | Neutral notices and current context |
 | `success` | `#72B889` | Completed successfully |
 | `warning` | `#D6A84B` | Attention needed, nonfatal |
@@ -346,6 +346,15 @@ When `NO_COLOR` is present, regardless of value:
 - Ensure snapshots contain no escape sequences.
 
 Non-TTY execution must never enter the TUI and must continue using stable text/JSON behavior.
+
+## Reduced motion
+
+When `DEBUGDOC_REDUCE_MOTION=1` is present:
+
+- Do not schedule cosmetic animation ticks.
+- Replace animated indicators with the static `RUNNING` label.
+- Preserve the same lifecycle state, operation text, cancellation behavior, layout, and footer guidance.
+`TERM=dumb` and flat/screen-reader presentation also disable motion. `NO_COLOR` disables color independently and may retain restrained textual motion.
 
 ## ASCII and flat fallbacks
 
@@ -496,8 +505,8 @@ Assertions must check rendered width and height with ANSI-aware helpers and fail
 - Interactive root enters and restores alternate screen on success, error, cancellation, and panic-equivalent failure paths where testable.
 - Resize events do not corrupt the frame.
 - Non-TTY root behavior remains fail-closed.
-- `devdoctor diagnose --format text` remains stable.
-- `devdoctor diagnose --format json` keeps report schema `1.0` unchanged.
+- `debugdoc diagnose --format text` remains stable.
+- `debugdoc diagnose --format json` keeps report schema `1.0` unchanged.
 - No implementation exposes arbitrary shell execution or begins Phase 3 rules.
 - Existing consent, timeout, cancellation, bounded-output, identity-revalidation, process-tree cleanup, and fail-closed tests continue to pass.
 - Run supported-platform tests and a PTY smoke test on Windows, macOS, and Linux when the implementation phase begins.

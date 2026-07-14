@@ -22,7 +22,7 @@ type discoveryFinishedMsg struct {
 	err        error
 }
 
-// Model is the Bubble Tea state for the DevDoctor interactive shell.
+// Model is the Bubble Tea state for the DebugDoc interactive shell.
 type Model struct {
 	parentContext  context.Context
 	discover       DiscoverFunc
@@ -42,6 +42,8 @@ type Model struct {
 	capabilities Capabilities
 	styles       styles
 	viewport     Viewport
+	animation    animationState
+	transient    transientFooter
 
 	draft           string
 	validation      string
@@ -60,7 +62,8 @@ func NewModel(config Config) Model {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	capabilities := Capabilities{Color: config.Color, ASCII: config.ASCII, Flat: config.Flat}
+	motionEnabled := !config.ReduceMotion && !config.Flat
+	capabilities := Capabilities{Color: config.Color, ASCII: config.ASCII, Flat: config.Flat, Motion: motionEnabled}
 	model := Model{
 		parentContext: ctx,
 		discover:      config.Discover,
@@ -70,6 +73,7 @@ func NewModel(config Config) Model {
 		capabilities:  capabilities,
 		styles:        newStyles(capabilities),
 		viewport:      newViewport(),
+		animation:     newAnimationState(motionEnabled, config.ASCII),
 		focus:         FocusComposer,
 	}
 	model.resize(minimumWidth, minimumHeight)
@@ -89,6 +93,15 @@ func (m Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case discoveryFinishedMsg:
 		return m.finishDiscovery(message)
+	case animationTickMsg:
+		if message.generation != m.generation || m.state != StateRunning || !m.animation.enabled {
+			return m, nil
+		}
+		m.animation.advance()
+		return m, m.animation.tick(m.generation)
+	case transientExpiredMsg:
+		m.transient.expire(message)
+		return m, nil
 	case tea.KeyMsg:
 		return m.updateKey(message)
 	default:
@@ -105,8 +118,8 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if keyName == keyCancel && m.state == StateRunning && m.runCancel != nil {
 		m.closePalette()
 		m.runCancel()
-		m.validation = "Cancelling safe metadata discovery."
-		return m, nil
+		m.validation = ""
+		return m, m.transient.set("Diagnosis cancellation requested", false)
 	}
 	if m.paletteOpen {
 		return m.updatePalette(key)
@@ -116,7 +129,7 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.focus = FocusWarnings
 		m.refreshContent()
 		m.viewport.JumpToStart()
-		return m, nil
+		return m, m.transient.set("Returned to warnings", false)
 	}
 	if m.screen == ScreenWarnings && !m.warningDetail && m.warningCount() > 0 && m.draft == "" {
 		switch keyName {
@@ -131,7 +144,7 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.focus = FocusWarningDetail
 			m.refreshContent()
 			m.viewport.JumpToStart()
-			return m, nil
+			return m, m.transient.set("Opened warning details", false)
 		}
 	}
 
@@ -139,21 +152,21 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case keyCancel:
 		if m.draft != "" {
 			m.draft = ""
-			m.validation = "Input cleared."
-			return m, nil
+			m.validation = ""
+			return m, m.transient.set("Input cleared", false)
 		}
 		if m.quitArmed {
 			return m, tea.Quit
 		}
 		m.quitArmed = true
-		m.validation = "Press Ctrl+C again or type /quit to leave DevDoctor."
+		m.validation = "Press Ctrl+C again or type /quit to leave DebugDoc."
 		return m, nil
 	case keyRedraw:
 		return m, tea.ClearScreen
 	case keyHelp:
 		if m.draft == "" && m.state != StateRunning {
 			m.navigateTo(ScreenHelp)
-			return m, nil
+			return m, m.transient.set("Opened Help", false)
 		}
 	case keyUp:
 		m.viewport.ScrollUp(1)
@@ -179,12 +192,14 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.focus = FocusComposer
 		m.draft = trimLastRune(m.draft)
 		m.validation = ""
+		m.transient.clear()
 		m.syncPalette()
 		return m, nil
 	case keyEscape:
 		if m.draft != "" {
 			m.draft = ""
 			m.validation = ""
+			m.transient.clear()
 			return m, nil
 		}
 		if m.hasPrevious {
@@ -199,6 +214,7 @@ func (m Model) updateKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.focus = FocusComposer
 		m.draft = draft
 		m.validation = ""
+		m.transient.clear()
 		m.syncPalette()
 	}
 	return m, nil
@@ -227,7 +243,7 @@ func (m Model) updatePalette(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m.applyAction(action)
 		}
 		if len(m.paletteMatches) == 0 {
-			m.validation = "No matching DevDoctor command. Press Esc to keep editing."
+			m.validation = "No matching DebugDoc command. Press Esc to keep editing."
 			return m, nil
 		}
 		m.draft = m.paletteMatches[m.paletteSelected].Name
@@ -235,12 +251,15 @@ func (m Model) updatePalette(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.submitDraft()
 	case keyBack, keyBackAlt:
 		m.draft = trimLastRune(m.draft)
+		m.validation = ""
+		m.transient.clear()
 		m.syncPalette()
 		return m, nil
 	}
 	if draft, appended := appendPrintableInput(m.draft, key); appended {
 		m.draft = draft
 		m.validation = ""
+		m.transient.clear()
 		m.syncPalette()
 	}
 	return m, nil
@@ -249,6 +268,7 @@ func (m Model) updatePalette(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m Model) submitDraft() (tea.Model, tea.Cmd) {
 	action, err := ParseAction(m.draft)
 	if err != nil {
+		m.transient.clear()
 		m.validation = err.Error() + "."
 		return m, nil
 	}
@@ -260,39 +280,46 @@ func (m Model) submitDraft() (tea.Model, tea.Cmd) {
 
 func (m Model) applyAction(action Action) (tea.Model, tea.Cmd) {
 	if !IsActionAvailable(action, m.commandContext()) {
-		m.validation = "That DevDoctor action is unavailable while discovery is running."
+		m.transient.clear()
+		m.validation = "That DebugDoc action is unavailable while discovery is running."
 		return m, nil
 	}
+	m.validation = ""
 	switch action.ID {
 	case CommandDiagnose:
 		return m.startDiscovery()
 	case CommandProject:
 		m.navigateTo(ScreenProject)
+		return m, m.transient.set("Opened Project", false)
 	case CommandWarnings:
 		m.navigateTo(ScreenWarnings)
+		return m, m.transient.set("Opened Warnings", false)
 	case CommandExport:
 		m.navigateTo(ScreenExport)
+		return m, m.transient.set("Opened Export", false)
 	case CommandHelp:
 		m.navigateTo(ScreenHelp)
+		return m, m.transient.set("Opened Help", false)
 	case CommandClear:
 		m.runError = ""
-		m.validation = ""
 		m.hasPrevious = false
 		m.showScreen(ScreenHome)
+		return m, m.transient.set("View cleared", false)
 	case CommandQuit:
 		if m.state == StateRunning && m.runCancel != nil {
 			m.quitPending = true
 			m.runCancel()
-			m.validation = "Cancelling discovery before exit."
-			return m, nil
+			return m, m.transient.set("Cancelling diagnosis before exit", false)
 		}
 		return m, tea.Quit
+	default:
+		return m, nil
 	}
-	return m, nil
 }
 
 func (m Model) startDiscovery() (tea.Model, tea.Cmd) {
 	if m.state == StateRunning {
+		m.transient.clear()
 		m.validation = "A discovery run is already active."
 		return m, nil
 	}
@@ -301,7 +328,7 @@ func (m Model) startDiscovery() (tea.Model, tea.Cmd) {
 		m.runError = "Discovery is unavailable."
 		m.hasPrevious = false
 		m.showScreen(ScreenDiagnose)
-		return m, nil
+		return m, m.transient.set("Diagnosis unavailable", true)
 	}
 	ctx, cancel := context.WithCancel(m.parentContext)
 	m.runCancel = cancel
@@ -311,12 +338,19 @@ func (m Model) startDiscovery() (tea.Model, tea.Cmd) {
 	projectPath := m.projectPath
 	m.state = StateRunning
 	m.runError = ""
+	m.validation = ""
 	m.hasPrevious = false
+	m.animation.frame = 0
 	m.showScreen(ScreenDiagnose)
-	return m, func() tea.Msg {
+	discoveryCommand := func() tea.Msg {
 		discoveryReport, err := discover(ctx, projectPath)
 		return discoveryFinishedMsg{generation: generation, report: discoveryReport, err: err}
 	}
+	return m, tea.Batch(
+		discoveryCommand,
+		m.animation.tick(generation),
+		m.transient.set("Diagnosis started", false),
+	)
 }
 
 func (m Model) finishDiscovery(message discoveryFinishedMsg) (tea.Model, tea.Cmd) {
@@ -354,7 +388,28 @@ func (m Model) finishDiscovery(message discoveryFinishedMsg) (tea.Model, tea.Cmd
 	if m.quitPending {
 		return m, tea.Quit
 	}
-	return m, nil
+
+	var messageText string
+	persistent := false
+	switch m.state {
+	case StateOK:
+		messageText = "Diagnosis complete"
+	case StateWarning:
+		messageText = "Diagnosis complete with warnings"
+	case StateCancelled:
+		messageText = "Diagnosis cancelled"
+	case StateTimedOut:
+		messageText = "Diagnosis timed out"
+		persistent = true
+	case StateFailed:
+		messageText = "Diagnosis failed"
+		persistent = true
+	case StateReady, StateRunning, StateWaiting, StateSkipped:
+		messageText = "Diagnosis finished"
+	default:
+		messageText = "Diagnosis finished"
+	}
+	return m, m.transient.set(messageText, persistent)
 }
 
 func (m *Model) showScreen(screen Screen) {
@@ -481,7 +536,7 @@ func (m Model) renderHeader() []string {
 		status = m.stateMarker()
 	}
 	headerWidth := min(64, m.layout.ContentWidth)
-	first := alignEdges(m.styles.product.Render("DevDoctor"), status, headerWidth)
+	first := alignEdges(m.styles.product.Render("DebugDoc"), status, headerWidth)
 
 	view := m.screen.String()
 	separator := " · "
@@ -494,6 +549,11 @@ func (m Model) renderHeader() []string {
 func (m Model) renderViewport() []string {
 	lines := m.viewport.Lines()
 	for index, line := range lines {
+		if m.screen == ScreenDiagnose && m.state == StateRunning && m.viewport.offset+index == 0 {
+			indicator := m.styles.accent.Render(m.animation.indicator())
+			lines[index] = indicator + "  " + line
+			continue
+		}
 		switch {
 		case strings.HasPrefix(line, "> "):
 			lines[index] = m.styles.warningSelected.Render(padCells(line, min(76, m.layout.ContentWidth)))
@@ -547,6 +607,9 @@ func (m Model) renderFooter() []string {
 	if m.validation != "" {
 		return fitLines([]string{m.styles.error.Render(truncateCells(m.validation, m.layout.ContentWidth))}, m.layout.FooterHeight)
 	}
+	if m.transient.text != "" {
+		return fitLines([]string{m.styles.muted.Render(truncateCells(m.transient.text, m.layout.ContentWidth))}, m.layout.FooterHeight)
+	}
 	if m.viewport.Overflowing() {
 		start, end, total := m.viewport.Position()
 		message := fmt.Sprintf("Rows %d–%d of %d   PgUp/PgDn scroll   End latest", start, end, total)
@@ -571,7 +634,7 @@ func (m Model) overlayPalette(viewportLines []string) []string {
 
 	palette := []string{m.styles.paletteTitle.Render("Commands")}
 	if len(m.paletteMatches) == 0 {
-		palette = append(palette, "  No matching DevDoctor command")
+		palette = append(palette, "  No matching DebugDoc command")
 	} else {
 		visible := min(len(m.paletteMatches), geometry.Height-1)
 		start := 0
@@ -632,7 +695,7 @@ func isSectionHeading(value string) bool {
 
 func (m Model) renderLimited() string {
 	lines := []string{
-		"DevDoctor",
+		"DebugDoc",
 		"",
 		"Interactive mode needs at least 80 columns by 24 rows.",
 		fmt.Sprintf("Current size: %dx%d.", m.layout.Width, m.layout.Height),

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to DevDoctor will be documented in this file.
+All notable changes to DebugDoc will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases will follow semantic versioning once the public API and report schema stabilize.
 

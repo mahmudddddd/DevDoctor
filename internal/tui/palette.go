@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// CommandID is a closed identifier for a registered DevDoctor action.
+// CommandID is a closed identifier for a registered DebugDoc action.
 type CommandID string
 
 // Registered command identifiers.
@@ -47,7 +47,7 @@ var commandRegistry = []Command{
 	{ID: CommandExport, Name: "/export", Description: "Preview report", Rank: 3, Available: availableWhenIdle},
 	{ID: CommandHelp, Name: "/help", Description: "Show help", Rank: 4, Available: availableWhenIdle},
 	{ID: CommandClear, Name: "/clear", Description: "Clear current view", Rank: 5, Available: availableWhenIdle},
-	{ID: CommandQuit, Name: "/quit", Description: "Exit DevDoctor", Rank: 6, Available: availableAlways},
+	{ID: CommandQuit, Name: "/quit", Description: "Exit DebugDoc", Rank: 6, Available: availableAlways},
 }
 
 func availableWhenIdle(context CommandContext) bool {
@@ -135,10 +135,10 @@ func IsActionAvailable(action Action, context CommandContext) bool {
 func ParseAction(input string) (Action, error) {
 	fields := strings.Fields(strings.TrimSpace(input))
 	if len(fields) == 0 {
-		return Action{}, fmt.Errorf("enter a registered DevDoctor command beginning with /")
+		return Action{}, fmt.Errorf("enter a registered DebugDoc command beginning with /")
 	}
 	if !strings.HasPrefix(fields[0], "/") {
-		return Action{}, fmt.Errorf("DevDoctor accepts registered slash commands only; shell input was not run")
+		return Action{}, fmt.Errorf("DebugDoc accepts registered slash commands only; shell input was not run")
 	}
 	if len(fields) != 1 {
 		return Action{}, fmt.Errorf("%s does not accept arguments", fields[0])
@@ -148,5 +148,5 @@ func ParseAction(input string) (Action, error) {
 			return Action{ID: command.ID}, nil
 		}
 	}
-	return Action{}, fmt.Errorf("no matching DevDoctor command for %q", fields[0])
+	return Action{}, fmt.Errorf("no matching DebugDoc command for %q", fields[0])
 }

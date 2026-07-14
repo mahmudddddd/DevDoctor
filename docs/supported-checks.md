@@ -1,6 +1,6 @@
 # Supported checks
 
-This document describes behavior that is backed by fixtures and tests. It is intentionally narrower than DevDoctor's long-term roadmap.
+This document describes behavior that is backed by fixtures and tests. It is intentionally narrower than DebugDoc's long-term roadmap.
 
 ## Phase 1: safe project discovery
 

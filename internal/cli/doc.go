@@ -1,2 +1,2 @@
-// Package cli defines DevDoctor commands and interactive terminal behavior.
+// Package cli defines DebugDoc commands and interactive terminal behavior.
 package cli

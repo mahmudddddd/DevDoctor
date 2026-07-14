@@ -13,7 +13,7 @@ test:
 	go test ./...
 
 build:
-	go build -trimpath -o bin/devdoctor ./cmd/devdoctor
+	go build -trimpath -o bin/debugdoc ./cmd/debugdoc
 
 check: vet lint test build
 

@@ -1,4 +1,4 @@
-# Contributing to DevDoctor
+# Contributing to DebugDoc
 
 Thank you for helping make software setup errors easier to understand.
 
@@ -11,13 +11,13 @@ Thank you for helping make software setup errors easier to understand.
 
 ## Development setup
 
-DevDoctor supports the current and previous stable Go releases.
+DebugDoc supports the current and previous stable Go releases.
 
 ```bash
 go mod download
 go test ./...
 go vet ./...
-go build ./cmd/devdoctor
+go build ./cmd/debugdoc
 ```
 
 Run `gofmt` on changed Go files. CI also runs `golangci-lint` and cross-platform tests. Changes to command execution must also pass `go test -race ./...` and platform-specific timeout, cancellation, output-flood, and descendant-cleanup tests.
