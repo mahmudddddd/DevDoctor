@@ -23,7 +23,8 @@ Phase 1 implements CLI presentation, safe discovery, a file policy, structured p
 ## Package responsibilities
 
 - `cmd/devdoctor`: executable entry point only.
-- `internal/cli`: Cobra commands, Huh interaction, TTY policy, and dependency wiring.
+- `internal/cli`: Cobra commands, TTY policy, consent adapters, and dependency wiring.
+- `internal/tui`: Bubble Tea interactive state, typed actions, responsive layout, viewport, and terminal rendering.
 - `internal/app`: use-case orchestration without terminal formatting.
 - `internal/model`: serializable domain models and schema versions.
 - `internal/detect`: evidence-based project, stack, workspace, runtime, and package-manager detection.
@@ -35,7 +36,7 @@ Future packages add fact collectors, deterministic rules, bounded process execut
 
 ## Dependency direction
 
-Presentation depends on application workflows and models. Application workflows depend on detectors and policies. Detectors return structured data and never print. Domain models do not depend on Cobra, Huh, terminal styling, or external agents.
+Presentation depends on application workflows and models. The full-screen TUI consumes structured reports and resolves only registered DevDoctor actions; it does not parse report text or accept shell commands. Application workflows depend on detectors and policies. Detectors return structured data and never print. Domain models do not depend on Cobra, Bubble Tea, Huh, terminal styling, or external agents.
 
 ## Untrusted input
 

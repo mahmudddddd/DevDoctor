@@ -30,7 +30,7 @@ go install github.com/mahmudddddd/DevDoctor/cmd/devdoctor@latest
 
 ## Usage
 
-Open the interactive menu:
+Open the full-screen interactive shell:
 
 ```bash
 devdoctor

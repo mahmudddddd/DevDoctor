@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -116,5 +117,83 @@ func TestDiagnosePropagatesDiscoveryError(t *testing.T) {
 	err := command.Execute()
 	if err == nil || !strings.Contains(err.Error(), "discover project: boom") {
 		t.Fatalf("Execute() error = %v, want wrapped discovery error", err)
+	}
+}
+
+func TestInteractiveRootLaunchesTUIBeforeDiscoveryOutput(t *testing.T) {
+	t.Parallel()
+	var output bytes.Buffer
+	discovery := &fakeDiscovery{}
+	launched := false
+	command := NewRootCommand(Dependencies{
+		Input:         strings.NewReader(""),
+		Output:        &output,
+		ErrorOutput:   &output,
+		CurrentDir:    func() (string, error) { return "C:/project", nil },
+		IsInteractive: func() bool { return true },
+		UseColor:      func() bool { return false },
+		Discovery:     discovery,
+		RunInteractive: func(ctx context.Context, input io.Reader, writer io.Writer, path string, color bool, service DiscoveryService) error {
+			launched = true
+			if ctx == nil || input == nil || writer != &output {
+				t.Fatalf("interactive runner received incomplete dependencies")
+			}
+			if path != "C:/project" || color {
+				t.Fatalf("path/color = %q/%v, want C:/project/false", path, color)
+			}
+			if service != discovery {
+				t.Fatalf("discovery service was not forwarded")
+			}
+			if output.Len() != 0 || discovery.calls != 0 {
+				t.Fatalf("pre-launch output/calls = %q/%d, want empty/0", output.String(), discovery.calls)
+			}
+			return nil
+		},
+	})
+	command.SetArgs(nil)
+
+	if err := command.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	if !launched {
+		t.Fatal("interactive runner was not launched")
+	}
+}
+
+func TestDiagnoseTextAndVersionRemainAvailable(t *testing.T) {
+	t.Parallel()
+	var output bytes.Buffer
+	discovery := &fakeDiscovery{report: model.ProjectReport{
+		SchemaVersion: model.ReportSchemaVersion,
+		ToolVersion:   "test",
+		Project: model.ProjectSummary{
+			Root: "/project",
+			Name: "fixture",
+		},
+	}}
+	command := NewRootCommand(Dependencies{
+		Input:         strings.NewReader("not read"),
+		Output:        &output,
+		ErrorOutput:   &output,
+		IsInteractive: func() bool { return false },
+		UseColor:      func() bool { return false },
+		Discovery:     discovery,
+	})
+	command.SetArgs([]string{"diagnose", "--path", "."})
+	if err := command.Execute(); err != nil {
+		t.Fatalf("diagnose Execute() error = %v", err)
+	}
+	if !strings.Contains(output.String(), "DevDoctor project discovery") || !strings.Contains(output.String(), "Report schema: 1.0") {
+		t.Fatalf("diagnose output = %q", output.String())
+	}
+
+	output.Reset()
+	versionCommand := NewRootCommand(Dependencies{Output: &output, ErrorOutput: &output, IsInteractive: func() bool { return false }})
+	versionCommand.SetArgs([]string{"version"})
+	if err := versionCommand.Execute(); err != nil {
+		t.Fatalf("version Execute() error = %v", err)
+	}
+	if strings.TrimSpace(output.String()) == "" {
+		t.Fatal("version output is empty")
 	}
 }

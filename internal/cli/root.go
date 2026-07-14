@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -23,13 +22,14 @@ type DiscoveryService interface {
 
 // Dependencies contains injectable terminal and discovery dependencies.
 type Dependencies struct {
-	Input         io.Reader
-	Output        io.Writer
-	ErrorOutput   io.Writer
-	CurrentDir    func() (string, error)
-	IsInteractive func() bool
-	UseColor      func() bool
-	Discovery     DiscoveryService
+	Input          io.Reader
+	Output         io.Writer
+	ErrorOutput    io.Writer
+	CurrentDir     func() (string, error)
+	IsInteractive  func() bool
+	UseColor       func() bool
+	Discovery      DiscoveryService
+	RunInteractive func(context.Context, io.Reader, io.Writer, string, bool, DiscoveryService) error
 }
 
 // Execute runs the DevDoctor command with process-standard dependencies.
@@ -56,18 +56,14 @@ func NewRootCommand(dependencies Dependencies) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("determine current directory: %w", err)
 			}
-			err = runInteractive(
+			err = dependencies.RunInteractive(
 				command.Context(),
 				command.InOrStdin(),
 				command.OutOrStdout(),
 				currentDirectory,
-				func(ctx context.Context, path, format string) error {
-					return runDiagnosis(ctx, dependencies, path, format)
-				},
+				dependencies.UseColor(),
+				dependencies.Discovery,
 			)
-			if errors.Is(err, errInteractiveExit) {
-				return nil
-			}
 			return err
 		},
 	}
@@ -152,6 +148,9 @@ func withDefaults(dependencies Dependencies) Dependencies {
 	if dependencies.Discovery == nil {
 		service := app.NewDiscoveryService()
 		dependencies.Discovery = service
+	}
+	if dependencies.RunInteractive == nil {
+		dependencies.RunInteractive = runInteractive
 	}
 	return dependencies
 }
